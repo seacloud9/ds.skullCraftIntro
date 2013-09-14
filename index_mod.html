@@ -1,0 +1,206 @@
+<!doctype html><title>Minimal tQuery Page</title>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="./tquery.min.js"></script>
+<script id="vertexShader" type="x-shader/x-vertex">
+
+			varying vec2 vUv;
+
+			void main()
+			{
+				vUv = uv;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+
+		</script>
+<script id="shaderX" type="x-shader/x-fragment">
+
+
+			
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+// burl figure
+
+// - trick, use far less iterations!
+varying vec2 vUv;
+//vec2 p = -1.0 + 2.0 * vUv;
+//uniform vec2 resolution;
+uniform float time;
+
+const float Pi = 3.14159;
+
+float sinApprox(float x) {
+    x = Pi + (2.0 * Pi) * floor(x / (2.0 * Pi)) - x;
+    return (4.0 / Pi) * x - (4.0 / Pi / Pi) * x * abs(x);
+}
+
+float cosApprox(float x) {
+    return sinApprox(x + 0.5 * Pi);
+}
+
+const int steps = 3;
+const int stepscale = 3;
+const float colorscale = 10.0;
+
+void main()
+{
+
+	//vec2 p=(2.0*gl_FragCoord.xy-resolution)/max(resolution.x,resolution.y);
+	vec2 p = -1.0 + 2.0 * vUv;
+	vec3 col;
+	for(int i=1;i<=steps;i++)
+	{
+		vec2 newp=p;
+		newp.x+=0.6/float(i)*sin(float(i*stepscale)*p.y+time/10.0+0.3*float(i))+400./20.0;		
+		newp.y+=0.6/float(i)*sin(float(i*stepscale)*p.x+time/10.0+0.3*float(i+10))-400./20.0+15.0;
+		p=newp;
+		
+		if(i>=(steps-2)) {
+			float level = sin(length(p)*colorscale)*0.5+0.5;
+			col[i-(steps-2)] = level;
+		}
+	}
+	gl_FragColor=vec4(col, 1.0);
+}
+
+</script>
+<script id="minecraft" type="text/javascript">
+tQuery.Object3D.registerInstance('setMineCraft', function(opts){
+	opts	= tQuery.extend(opts, {
+		scale	: 1,
+		speed	: 0.3,
+		world	: tQuery.world
+	});
+	this.each(function(object3d){
+		var uniforms	= {
+			time	: { type: "f", value: 1.0 },
+			scale	: { type: "f", value: opts.scale }
+		};
+
+		var material	= new THREE.ShaderMaterial({
+			uniforms	: uniforms,
+			vertexShader	: document.getElementById( 'vertexShader' ).textContent,
+			fragmentShader	: document.getElementById( 'shaderX' ).textContent
+		});
+
+		object3d.material	= material;
+		opts.world.hook(function(delta, now){
+			uniforms.time.value += opts.speed * delta;
+		});
+	});
+	// for chained API
+	return this;
+});
+
+</script>
+<body><script>
+
+$(function(){
+	canvasCallback = $.Callbacks();
+	var prCodeInit = function(){
+		console.log('p1');
+		var $projDiv = $('#pContain');
+		var canvasRef = $('<canvas id="skullz"/>');
+		p = Processing.loadSketchFromSources('skullz', ['skullz.pde']);
+		$projDiv.append(canvasRef); 
+	}
+
+	world	= tQuery.createWorld().boilerplate().start();
+	//object	= tQuery.createTorus().addTo(world);
+
+	var createText = function(){
+		console.log('p2');
+		var loader = new THREE.JSONLoader();
+		loader.load( "skullcraft.js", createScene );
+
+
+
+		function createScene( geometry ) {
+			console.log(geometry);
+			g = geometry;
+			g.computeVertexNormals();
+			//g.computeTangents();
+			g.verticesNeedUpdate = true;
+			g.elementsNeedUpdate = true;
+			g.morphTargetsNeedUpdate = true;
+			g.uvsNeedUpdate = true;
+			g.normalsNeedUpdate = true;
+			g.colorsNeedUpdate = true;
+			g.tangentsNeedUpdate = true;
+			Material = new THREE.MeshLambertMaterial(
+			{
+				color: 0xCC0000
+			});
+
+
+			wrapTexture();
+			//mesh = new THREE.Mesh( g, Material );
+			
+			mesh = new THREE.Mesh( g, material );
+			mesh.dynamic = true;
+			world.add( mesh );
+			object3d	= tQuery.createPlane().addTo(world);
+			object3d.setMineCraft({
+				scale	: 3,
+				speed	: 0.1,
+			});
+			object3d.scaleBy(8);
+			object3d.doubleSided = true
+			/*
+			meshCanvas = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width , canvas.height), shaderX);
+			meshCanvas.parent = world._tCamera;
+			meshCanvas.dynamic = true;
+			meshCanvas.position.copy( world._tCamera.position );
+			meshCanvas.rotation.copy( world._tCamera.rotation );
+			meshCanvas.translateZ( -150 );
+			world._tCamera.add( meshCanvas );
+			*/
+
+	}
+
+
+}
+
+
+	canvasCallback.add(prCodeInit);
+	canvasCallback.add(createText);
+	canvasCallback.fire('createText');
+
+
+		world.loop().hook(function(){
+			//console.log("really??");
+			
+
+
+			try{
+				wrapTexture();
+				world._tScene.children[1].material = material;
+
+
+
+			}catch(e){
+				console.log(e);
+			}
+		});	
+});
+
+function wrapTexture(){
+	canvas = document.getElementById('skullz');
+	texture = new THREE.Texture(canvas);
+	texture.needsUpdate = true;
+
+	material = new THREE.MeshBasicMaterial({
+					overdraw:true, map:texture, transparent: true
+	});
+	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+}
+
+</script>
+<script src="processing.js" type="text/javascript"></script>
+<div id="pContain" width="1024" height="1024" style="display:none"></div>
+
+
+
+</body>

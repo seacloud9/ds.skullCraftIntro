@@ -1,0 +1,55 @@
+{
+  "name": "skullcraft",
+  "private": false,
+  "description": "",
+  "version": "0.1.0",
+  "author": {
+    "name": "Brendon Smith",
+    "email": "brendonsmith@seacloud9.org",
+    "url": "http://seacloud9.org"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/shama/ludum-dare-26/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "start": "node_modules/.bin/browservefy index.js 8080 -- -d"
+  },
+  "dependencies": {
+    "voxel": "0.3.1",
+    "voxel-mesh": "0.2.1",
+    "voxel-view": "0.0.6",
+    "voxel-raycast": "0.2.1",
+    "voxel-control": "0.0.7",
+    "voxel-texture": "0.5.6",
+    "voxel-physical": "0.0.10",
+    "voxel-region-change": "0.1.0",
+    "voxel-player": "0.1.0",
+    "voxel-creature": "0.1.0",
+    "voxel-critter": "0.1.1",
+    "voxel-sky": "0.2.0",
+    "raf": "0.0.1",
+    "three": "0.56.0",
+    "pin-it": "0.0.1",
+    "aabb-3d": "0.0.0",
+    "inherits": "1.0.0",
+    "interact": "0.0.2",
+    "gl-matrix": "2.0.0",
+    "kb-controls": "0.0.2",
+    "spatial-events": "0.0.1",
+    "spatial-trigger": "0.0.0",
+    "collide-3d-tilemap": "0.0.1",
+    "tic": "0.2.1"
+  },
+  "devDependencies": {
+    "browservefy": "0.0.10"
+  },
+  "keywords": [
+    "voxel"
+  ]
+}

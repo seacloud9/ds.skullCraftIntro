@@ -1,0 +1,242 @@
+<!doctype html><title>Minimal tQuery Page</title>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="./tquery.min.js"></script>
+<script id="vertexShader" type="x-shader/x-vertex">
+
+			varying vec2 vUv;
+
+			void main()
+			{
+				vUv = uv;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+
+		</script>
+<script id="shaderX" type="x-shader/x-fragment">
+
+
+
+
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+// added a little hack to effectively keep the thickness of the white lines constant in screen-space,
+//by upscaling based on distance.
+
+uniform float time;
+uniform vec2 mouse;
+uniform vec2 resolution;
+
+varying vec2 vUv;
+
+vec3 rotXY(vec3 p, vec2 rad) {
+	vec2 s = sin(rad);
+	vec2 c = cos(rad);
+	
+	mat3 m = mat3(
+		c.y, 0.0, -s.y,
+		-s.x * s.y, c.x, -s.x * c.y,
+		c.x * s.y, s.x, c.x * c.y
+	);
+	return m * p;
+}
+
+vec2 repeat(vec2 p, float n) {
+	vec2 np = p * n;
+	vec2 npfrct = fract(np);
+	vec2 npreal = np - npfrct;
+	np.x += fract(npreal.y * 0.5);
+	
+	return fract(np) * 2.0 - 1.0;
+}
+
+float hexDistance(vec2 ip) {
+	const float SQRT3 = 1.732050807568877;
+	const vec2 TRIG30 = vec2(0.25, 0.866025403784439); //x:sine, y:cos
+	
+	vec2 p = abs(ip * vec2(SQRT3 * 0.5, 0.5+sin(time)*0.5));
+	float d = dot(p, vec2(-TRIG30.x, TRIG30.y)) - SQRT3 * 0.125;
+	
+	return (d > 0.0)? min(d, (SQRT3 * 0.5 - p.x)) : min(-d, p.x);
+}
+
+float smoothEdge(float edge, float margin, float x) {
+	return smoothstep(edge - margin, edge + margin, x);
+}
+
+void main(void) {
+	const float PI = 3.1415926535;
+	vec3 rgb;
+	
+	//vec2 nsc = (gl_FragCoord.xy - resolution * 0.5) / resolution.yy * 2.0;
+	vec2 nsc = -1.0 + 2.0 * vUv;
+	vec3 dir = normalize(vec3(nsc, -2.0));
+	//dir = rotXY(dir, vec2((mouse.yx - 0.5) * PI * 0.35));
+	dir = rotXY(dir, vec2(( 0.0) * PI * 0.35));
+	vec2 uv = vec2(atan(dir.y, dir.x) / (PI * 2.0) + 0.5, dir.z / length(dir.xy));
+	
+	float t= time*0.25;
+	vec2 pos = uv * vec2(1.0, 0.2) - vec2(t * 0.05, t * 0.5);
+	
+	vec2 p = repeat(pos, 16.0);
+	
+	float d = hexDistance(p);
+	float dist = dir.z/length(dir.xy);
+	d/=-dist;
+	float fade = 1.0 / pow(1.0 / length(dir.xy) * 0.3, 2.0);
+	fade = clamp(fade, 0.0, 1.0);
+	rgb  = mix(vec3(1.0)*fade, vec3(0.0), smoothEdge(0.03, 0.01, d));
+	rgb += mix(vec3(1.0, 0.6, 0.0)*fade, vec3(0.0), smoothEdge(0.03, 0.5, d)) * 0.5;
+	rgb += mix(vec3(1.0, 0.6, 0.0)*fade, vec3(0.0), smoothEdge(0.03, 1.0, d)) * 0.15;
+	
+	rgb = mix(rgb, vec3(0.2,0.6,0.99),dir.y);
+	gl_FragColor = vec4(rgb, 1.0);
+	
+}
+
+
+</script>
+<script id="minecraft" type="text/javascript">
+tQuery.Object3D.registerInstance('setMineCraft', function(opts){
+	opts	= tQuery.extend(opts, {
+		scale	: 1,
+		speed	: 5,
+		world	: tQuery.world
+	});
+	this.each(function(object3d){
+		var uniforms	= {
+			time	: { type: "f", value: 1.0 },
+			scale	: { type: "f", value: opts.scale }
+		};
+
+		var material	= new THREE.ShaderMaterial({
+			uniforms	: uniforms,
+			vertexShader	: document.getElementById( 'vertexShader' ).textContent,
+			fragmentShader	: document.getElementById( 'shaderX' ).textContent
+		});
+
+		object3d.material	= material;
+		opts.world.hook(function(delta, now){
+			uniforms.time.value += opts.speed * delta;
+		});
+	});
+	// for chained API
+	return this;
+});
+
+</script>
+<body><script>
+
+$(function(){
+	canvasCallback = $.Callbacks();
+	var prCodeInit = function(){
+		console.log('p1');
+		var $projDiv = $('#pContain');
+		var canvasRef = $('<canvas id="skullz"/>');
+		p = Processing.loadSketchFromSources('skullz', ['skullz.pde']);
+		$projDiv.append(canvasRef); 
+	}
+
+	world	= tQuery.createWorld().boilerplate().start();
+	//object	= tQuery.createTorus().addTo(world);
+
+	var createText = function(){
+		console.log('p2');
+		var loader = new THREE.JSONLoader();
+		loader.load( "skullcraft.js", createScene );
+
+
+
+		function createScene( geometry ) {
+			console.log(geometry);
+			g = geometry;
+			g.computeVertexNormals();
+			//g.computeTangents();
+			g.verticesNeedUpdate = true;
+			g.elementsNeedUpdate = true;
+			g.morphTargetsNeedUpdate = true;
+			g.uvsNeedUpdate = true;
+			g.normalsNeedUpdate = true;
+			g.colorsNeedUpdate = true;
+			g.tangentsNeedUpdate = true;
+			Material = new THREE.MeshLambertMaterial(
+			{
+				color: 0xCC0000
+			});
+
+
+			wrapTexture();
+			//mesh = new THREE.Mesh( g, Material );
+			
+			mesh = new THREE.Mesh( g, material );
+			mesh.dynamic = true;
+			world.add( mesh );
+			
+			object3d	= tQuery.createPlane().addTo(world);
+			object3d.setMineCraft({
+				scale	: 3,
+				speed	: 0.1,
+			});
+			object3d.scaleBy(8);
+			object3d.doubleSided = true;
+			
+
+			/*
+			meshCanvas = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width , canvas.height), shaderX);
+			meshCanvas.parent = world._tCamera;
+			meshCanvas.dynamic = true;
+			meshCanvas.position.copy( world._tCamera.position );
+			meshCanvas.rotation.copy( world._tCamera.rotation );
+			meshCanvas.translateZ( -150 );
+			world._tCamera.add( meshCanvas );
+			*/
+
+	}
+
+
+}
+
+
+	canvasCallback.add(prCodeInit);
+	canvasCallback.add(createText);
+	canvasCallback.fire('createText');
+
+
+		world.loop().hook(function(){
+			//console.log("really??");
+			
+
+
+			try{
+				wrapTexture();
+				world._tScene.children[1].material = material;
+
+
+
+			}catch(e){
+				console.log(e);
+			}
+		});	
+});
+
+function wrapTexture(){
+	canvas = document.getElementById('skullz');
+	texture = new THREE.Texture(canvas);
+	texture.needsUpdate = true;
+
+	material = new THREE.MeshBasicMaterial({
+					overdraw:true, map:texture, side:THREE.DoubleSide, transparent: true
+	});
+	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+}
+
+</script>
+<script src="processing.js" type="text/javascript"></script>
+<div id="pContain" width="1024" height="1024" style="display:none"></div>
+
+
+
+</body>
