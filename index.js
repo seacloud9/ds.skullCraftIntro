@@ -1,15 +1,15 @@
-$(function(){
+  $(function(){
     canvasCallback = $.Callbacks();
     var prCodeInit = function(){
 
       var $projDiv = $('#pContain');
       var canvasRef = $('<canvas id="skullz"/>');
-      p = Processing.loadSketchFromSources('skullz', ['skullz.pde']);
+      p = Processing.loadSketchFromSources('skullz', ['scripts/skullz.pde']);
       $projDiv.append(canvasRef); 
 
       var $projDiv2 = $('#pContain2');
       var canvasRef2 = $('<canvas id="starField"/>');
-      p = Processing.loadSketchFromSources('starField', ['starFieldSketch.pde']);
+      p = Processing.loadSketchFromSources('starField', ['scripts/starFieldSketch.pde']);
       $projDiv2.append(canvasRef2); 
     }
 
@@ -31,6 +31,7 @@ $(function(){
       controls: { discreteFire: false },
       materials: [['cake_top'], 'brick', 'dirt', 'obsidian']
     })
+    voxelpp = require('voxel-pp')
     window.game.scene.fog.color = {r:0,g:0,b:0}
     var terrainGenerator = perlinTerrain('foobar', 0, 2)
     game.paused = false
@@ -122,7 +123,7 @@ $(function(){
     }
     var createText = function(){
       var loader = new game.THREE.JSONLoader();
-      loader.load( "skullcraft.js", createScene );
+      loader.load( "scripts/skullcraft.js", createScene );
 
       function createScene( geometry ) {
         g = geometry;
@@ -315,10 +316,30 @@ $(function(){
       window.skullcraft.material = material
       createStarField();
       window.gameCube.material.materials = [material2,material2,material2,material2,material2,material2]
+      
+      //game.renderer.clear();
+      postprocessor.composer.render( 0.01 )
+        
     }catch(e){
       console.log(e)
     }
 
   })
+  
+  
+  postprocessor = voxelpp(game)
+  require("./scripts/ConvolutionShader")
+  require("./scripts/FilmShader")
+  require("./scripts/CopyShader")
+  require("./scripts/BloomPass")
+  require("./scripts/FilmPass")
+  var effectBloom = new game.THREE.BloomPass( 1.25 );
+  var effectFilm = new game.THREE.FilmPass( 0.35, 0.95, 2048, false );
+  effectFilm.renderToScreen = true;
+  //postprocessor.addPass('RenderPass', game.scene, game.camera)
+  //postprocessor.addPass( effectBloom );
+  //postprocessor.addPass( effectFilm );
+  
+
 
 });

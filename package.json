@@ -32,6 +32,7 @@
     "voxel-player": "0.1.0",
     "voxel-creature": "0.1.0",
     "voxel-critter": "0.1.1",
+    "voxel-pp": "0.0.4",
     "raf": "0.0.1",
     "three": "0.56.0",
     "pin-it": "0.0.1",

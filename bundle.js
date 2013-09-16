@@ -1,30 +1,27 @@
 ;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-$(function(){
+  $(function(){
+    canvasCallback = $.Callbacks();
+    var prCodeInit = function(){
 
-  canvasCallback = $.Callbacks();
-  var prCodeInit = function(){
+      var $projDiv = $('#pContain');
+      var canvasRef = $('<canvas id="skullz"/>');
+      p = Processing.loadSketchFromSources('skullz', ['scripts/skullz.pde']);
+      $projDiv.append(canvasRef); 
 
-    var $projDiv = $('#pContain');
-    var canvasRef = $('<canvas id="skullz"/>');
-    p = Processing.loadSketchFromSources('skullz', ['skullz.pde']);
-    $projDiv.append(canvasRef); 
+      var $projDiv2 = $('#pContain2');
+      var canvasRef2 = $('<canvas id="starField"/>');
+      p = Processing.loadSketchFromSources('starField', ['scripts/starFieldSketch.pde']);
+      $projDiv2.append(canvasRef2); 
+    }
 
-    var $projDiv2 = $('#pContain2');
-    var canvasRef2 = $('<canvas id="starField"/>');
-    p = Processing.loadSketchFromSources('starField', ['starFieldSketch.pde']);
-    $projDiv2.append(canvasRef2); 
-  }
-
-  var createGame = require('voxel-engine')
-  var perlinTerrain = require('voxel-perlin-terrain')
-  var voxel = require('voxel')
-  var physical = require('voxel-physical')
-  var tic = require('tic')();
-  var hasGenerated = false;
-  var hasGeneratedMod = false;
-
-
-
+    var createGame = require('voxel-engine')
+    var perlinTerrain = require('voxel-perlin-terrain')
+    var voxel = require('voxel')
+    var physical = require('voxel-physical')
+    var tic = require('tic')();
+    var hasGenerated = false;
+    var hasGeneratedMod = false;
+    //create the game and attach it to the window object
     window.game = createGame({
       chunkDistance: 2,
       skyColor:0x000000,
@@ -35,6 +32,7 @@ $(function(){
       controls: { discreteFire: false },
       materials: [['cake_top'], 'brick', 'dirt', 'obsidian']
     })
+    voxelpp = require('voxel-pp')
     window.game.scene.fog.color = {r:0,g:0,b:0}
     var terrainGenerator = perlinTerrain('foobar', 0, 2)
     game.paused = false
@@ -52,83 +50,52 @@ $(function(){
     })
     game.tic = tic;
 
+    //load critter
+    var critterCreator = require('voxel-critter')(game);
+    window.critterCreator = critterCreator;
 
-  var critterCreator = require('voxel-critter')(game);
-  window.critterCreator = critterCreator;
-
-  //loads the starField processing canvas
-  var createStarField = function(){
-    canvas2 = document.getElementById('starField');
-    tex = new window.game.THREE.Texture(canvas2);
-    tex.needsUpdate = true;
-    material2 = new game.THREE.MeshBasicMaterial({
-      side: game.THREE.DoubleSide,
-      transparent: true,
-      overdraw:true, 
-      fog: false,
-          map: tex
-        });
-    material2.magFilter = game.THREE.NearestFilter;
-    material2.minFilter = game.THREE.LinearMipMapLinearFilter;
-    material2.wrapS = material2.wrapT = game.THREE.RepeatWrapping;
-    return material2
-  }
-
-  // creates starfield skybox
-  var createSkyBox = function() {
-    var game = this.game;
-    var size = this.game.worldWidth() * 3;
-    var mat = new game.THREE.MeshBasicMaterial({
-      side: game.THREE.DoubleSide,
-    });
-    this.outer = new game.THREE.Mesh(
-      new game.THREE.CubeGeometry(size, size, size),
-      new game.THREE.MeshFaceMaterial([
-        mat, mat, mat, mat, mat, mat
-        ])
-      );
-    game.scene.add(this.outer);
-
-    var materials = [];
-    for (var i = 0; i < 6; i++) {
-      materials.push(createStarField());
+    //loads the starField processing canvas
+    var createStarField = function(){
+      canvas2 = document.getElementById('starField');
+      tex = new window.game.THREE.Texture(canvas2);
+      tex.needsUpdate = true;
+      material2 = new game.THREE.MeshBasicMaterial({
+        side: game.THREE.DoubleSide,
+        transparent: true,
+        overdraw:true, 
+        fog: false,
+        map: tex
+      });
+      material2.magFilter = game.THREE.NearestFilter;
+      material2.minFilter = game.THREE.LinearMipMapLinearFilter;
+      material2.wrapS = material2.wrapT = game.THREE.RepeatWrapping;
+      return material2
     }
-    var g = new game.THREE.CubeGeometry(size-10, size-10, size-10)
-    this.inner = new game.THREE.Mesh(
-      g,
-      new game.THREE.MeshFaceMaterial(materials)
-      );
-    g.computeVertexNormals();
-    g.verticesNeedUpdate = true;
-    g.elementsNeedUpdate = true;
-    g.morphTargetsNeedUpdate = true;
-    g.uvsNeedUpdate = true;
-    g.normalsNeedUpdate = true;
-    g.colorsNeedUpdate = true;
-    g.tangentsNeedUpdate = true;
-    window.gameCube = this.inner
-    game.scene.add(this.inner);
-  };
 
+    // creates starfield skybox
+    var createSkyBox = function() {
+      var game = this.game;
+      var size = this.game.worldWidth() * 3;
+      var mat = new game.THREE.MeshBasicMaterial({
+        side: game.THREE.DoubleSide,
+      });
+      this.outer = new game.THREE.Mesh(
+        new game.THREE.CubeGeometry(size, size, size),
+        new game.THREE.MeshFaceMaterial([
+          mat, mat, mat, mat, mat, mat
+          ])
+        );
+      game.scene.add(this.outer);
 
-  // creates skullcraft model from blender 
-
-  wrapTexture = function(){
-        canvas = document.getElementById('skullz');
-        texture = new window.game.THREE.Texture(canvas);
-        texture.needsUpdate = true;
-
-        material = new window.game.THREE.MeshBasicMaterial({
-                overdraw:true, map:texture, side:window.game.THREE.DoubleSide, transparent: true
-        });
-        texture.wrapS = texture.wrapT = window.game.THREE.RepeatWrapping;
-  }
-  var createText = function(){
-    var loader = new game.THREE.JSONLoader();
-    loader.load( "skullcraft.js", createScene );
-
-    function createScene( geometry ) {
-      g = geometry;
+      var materials = [];
+      for (var i = 0; i < 6; i++) {
+        materials.push(createStarField());
+      }
+      var g = new game.THREE.CubeGeometry(size-10, size-10, size-10)
+      this.inner = new game.THREE.Mesh(
+        g,
+        new game.THREE.MeshFaceMaterial(materials)
+        );
       g.computeVertexNormals();
       g.verticesNeedUpdate = true;
       g.elementsNeedUpdate = true;
@@ -137,10 +104,42 @@ $(function(){
       g.normalsNeedUpdate = true;
       g.colorsNeedUpdate = true;
       g.tangentsNeedUpdate = true;
-      Material = new game.THREE.MeshLambertMaterial(
-      {
-        color: 0xCC0000
+      window.gameCube = this.inner
+      game.scene.add(this.inner);
+    };
+
+
+    // creates skullcraft model from blender 
+    // loads js model into voxelJS game
+
+    wrapTexture = function(){
+      canvas = document.getElementById('skullz');
+      texture = new window.game.THREE.Texture(canvas);
+      texture.needsUpdate = true;
+
+      material = new window.game.THREE.MeshBasicMaterial({
+        overdraw:true, map:texture, side:window.game.THREE.DoubleSide, transparent: true
       });
+      texture.wrapS = texture.wrapT = window.game.THREE.RepeatWrapping;
+    }
+    var createText = function(){
+      var loader = new game.THREE.JSONLoader();
+      loader.load( "scripts/skullcraft.js", createScene );
+
+      function createScene( geometry ) {
+        g = geometry;
+        g.computeVertexNormals();
+        g.verticesNeedUpdate = true;
+        g.elementsNeedUpdate = true;
+        g.morphTargetsNeedUpdate = true;
+        g.uvsNeedUpdate = true;
+        g.normalsNeedUpdate = true;
+        g.colorsNeedUpdate = true;
+        g.tangentsNeedUpdate = true;
+        Material = new game.THREE.MeshLambertMaterial(
+        {
+          color: 0xCC0000
+        });
 
 
         wrapTexture();      
@@ -158,175 +157,195 @@ $(function(){
 
     }
 
-  canvasCallback.add(prCodeInit);
-  canvasCallback.add(createText);
-  canvasCallback.fire('createText');
+    canvasCallback.add(prCodeInit);
+    canvasCallback.add(createText);
+    canvasCallback.fire('createText');
 
 
 
-  var container = document.body
-  game.appendTo(container)
+    var container = document.body
+    game.appendTo(container)
 
-  // create a player
-  var createPlayer = require('voxel-player')(game);
-  var player = createPlayer('textures/shama.png');
-  player.yaw.position.set(0, 2, 0);
-  player.position.y = 10;
-  player.possess();
-  //player.toggle(); // switch to 3rd person
+    // create a player
+    var createPlayer = require('voxel-player')(game);
+    var player = createPlayer('textures/shama.png');
+    player.yaw.position.set(0, 2, 0);
+    player.position.y = 10;
+    player.possess();
+    //player.toggle(); // switch to 3rd person
 
-  window.skullzMod;
+    window.skullzMod;
 
-  game.on('tick', function(delta) { 
-    tic.tick(delta)
-    var skullzMod;
-    if(!hasGenerated){
-      hasGenerated = true;
-      game.controls.gravityEnabled = false;
-      var skullz = new Image();
-      skullz.onload = function() {
-        skullzMod = critterCreator(skullz);
-        skullzMod.position.x = 0;
-        skullzMod.position.y = 5;
-        skullzMod.rotation.z = 180.4;
-        skullzMod.rotation.y = -89.6;
-        skullzMod.position.z = -15;
-        skullzMod.item.velocity.x = 0;
-        skullzMod.item.velocity.y = 0;
-        skullzMod.item.velocity.z = 0; 
-        window.skullzMod = skullzMod;
+    game.on('tick', function(delta) { 
+      tic.tick(delta)
+      var skullzMod;
+      if(!hasGenerated){
+        hasGenerated = true;
+        game.controls.gravityEnabled = false;
+        var skullz = new Image();
+        skullz.onload = function() {
+          skullzMod = critterCreator(skullz);
+          skullzMod.position.x = 0;
+          skullzMod.position.y = 5;
+          skullzMod.rotation.z = 180.4;
+          skullzMod.rotation.y = -89.6;
+          skullzMod.position.z = -15;
+          skullzMod.item.velocity.x = 0;
+          skullzMod.item.velocity.y = 0;
+          skullzMod.item.velocity.z = 0; 
+          window.skullzMod = skullzMod;
 
-        /*
-        alternative lava shader from https://github.com/stemkoski/stemkoski.github.com
+          /*
+          alternative lava shader from https://github.com/stemkoski/stemkoski.github.com
 
-        lavaTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg');
-        lavaTexture.wrapS = lavaTexture.wrapT = game.THREE.RepeatWrapping; 
-        // multiplier for distortion speed    
-        baseSpeed = 0.02;
-        // number of times to repeat texture in each direction
-        repeatS = repeatT = 0.05;
+          lavaTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg');
+          lavaTexture.wrapS = lavaTexture.wrapT = game.THREE.RepeatWrapping; 
+          // multiplier for distortion speed    
+          baseSpeed = 0.02;
+          // number of times to repeat texture in each direction
+          repeatS = repeatT = 0.05;
 
-        // texture used to generate "randomness", distort all other textures
-        noiseTexture = new game.THREE.ImageUtils.loadTexture( 'textures/cloud.png' );
-        noiseTexture.wrapS = noiseTexture.wrapT = game.THREE.RepeatWrapping; 
-        // magnitude of noise effect
-        noiseScale = 0.5;
-        // texture to additively blend with base image texture
-        blendTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg' );
-        blendTexture.wrapS = blendTexture.wrapT = game.THREE.RepeatWrapping; 
-        // multiplier for distortion speed 
-        blendSpeed = 0.01;
-        // adjust lightness/darkness of blended texture
-        blendOffset = 0.25;
+          // texture used to generate "randomness", distort all other textures
+          noiseTexture = new game.THREE.ImageUtils.loadTexture( 'textures/cloud.png' );
+          noiseTexture.wrapS = noiseTexture.wrapT = game.THREE.RepeatWrapping; 
+          // magnitude of noise effect
+          noiseScale = 0.5;
+          // texture to additively blend with base image texture
+          blendTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg' );
+          blendTexture.wrapS = blendTexture.wrapT = game.THREE.RepeatWrapping; 
+          // multiplier for distortion speed 
+          blendSpeed = 0.01;
+          // adjust lightness/darkness of blended texture
+          blendOffset = 0.25;
 
-        // texture to determine normal displacement
-        bumpTexture = noiseTexture;
-        bumpTexture.wrapS = bumpTexture.wrapT = game.THREE.RepeatWrapping; 
-        // multiplier for distortion speed    
-        bumpSpeed   = 0.15;
-        // magnitude of normal displacement
-        bumpScale   = 40.0;
-    
-        // use "this." to create global object
-        cU = customUniforms = {
-          baseTexture:  { type: "t", value: lavaTexture },
-          baseSpeed:    { type: "f", value: baseSpeed },
-          repeatS:    { type: "f", value: repeatS },
-          repeatT:    { type: "f", value: repeatT },
-          noiseTexture: { type: "t", value: noiseTexture },
-          noiseScale:   { type: "f", value: noiseScale },
-          blendTexture: { type: "t", value: blendTexture },
-          blendSpeed:   { type: "f", value: blendSpeed },
-          blendOffset:  { type: "f", value: blendOffset },
-          bumpTexture:  { type: "t", value: bumpTexture },
-          bumpSpeed:    { type: "f", value: bumpSpeed },
-          bumpScale:    { type: "f", value: bumpScale },
-          alpha:      { type: "f", value: 1.0 },
-          time:       { type: "f", value: 1.0 }
+          // texture to determine normal displacement
+          bumpTexture = noiseTexture;
+          bumpTexture.wrapS = bumpTexture.wrapT = game.THREE.RepeatWrapping; 
+          // multiplier for distortion speed    
+          bumpSpeed   = 0.15;
+          // magnitude of normal displacement
+          bumpScale   = 40.0;
+      
+          // use "this." to create global object
+          cU = customUniforms = {
+            baseTexture:  { type: "t", value: lavaTexture },
+            baseSpeed:    { type: "f", value: baseSpeed },
+            repeatS:    { type: "f", value: repeatS },
+            repeatT:    { type: "f", value: repeatT },
+            noiseTexture: { type: "t", value: noiseTexture },
+            noiseScale:   { type: "f", value: noiseScale },
+            blendTexture: { type: "t", value: blendTexture },
+            blendSpeed:   { type: "f", value: blendSpeed },
+            blendOffset:  { type: "f", value: blendOffset },
+            bumpTexture:  { type: "t", value: bumpTexture },
+            bumpSpeed:    { type: "f", value: bumpSpeed },
+            bumpScale:    { type: "f", value: bumpScale },
+            alpha:      { type: "f", value: 1.0 },
+            time:       { type: "f", value: 1.0 }
+          };
+      
+          // create custom material from the shader code above
+          //   that is within specially labeled script tags
+
+          customMaterial = new game.THREE.ShaderMaterial( 
+          {
+            uniforms: cU,
+            vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+            fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+            transparent: true,
+            fog: false,
+            overdraw:true,
+            side: game.THREE.DoubleSide,
+            needsUpdate: true
+          });
+
+  */
+
+          // http://threejs.org/examples/webgl_shader_lava.html
+          lavaTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg');
+          lavaTexture.wrapS = lavaTexture.wrapT = game.THREE.RepeatWrapping; 
+
+          noiseTexture = new game.THREE.ImageUtils.loadTexture( 'textures/cloud.png' );
+          noiseTexture.wrapS = noiseTexture.wrapT = game.THREE.RepeatWrapping; 
+
+          cU = customUniforms  = {
+
+            fogDensity: { type: "f", value: 0 },
+            fogColor: { type: "v3", value: new game.THREE.Vector3( 0, 0, 0 ) },
+            time: { type: "f", value: 1.0 },
+            resolution: { type: "v2", value: new game.THREE.Vector2() },
+            uvScale: { type: "v2", value: new game.THREE.Vector2( 0.5, 0.5 ) },
+            texture1: { type: "t", value: noiseTexture },
+            texture2: { type: "t", value: lavaTexture }
+
+          };
+
+
+
+          var customMaterial = new game.THREE.ShaderMaterial( {
+            uniforms: cU,
+            vertexShader: document.getElementById( 'vertexShader2' ).textContent,
+            fragmentShader: document.getElementById( 'fragmentShader2' ).textContent,
+            transparent: true,
+            fog: false,
+            overdraw:true,
+            side: game.THREE.DoubleSide,
+            needsUpdate: true
+          } );
+          
+          window.skullzMod.item.mesh.children[0].material = customMaterial;
+
+
+
         };
-    
-        // create custom material from the shader code above
-        //   that is within specially labeled script tags
+        skullz.src = 'models/vs.png';
 
-        customMaterial = new game.THREE.ShaderMaterial( 
-        {
-          uniforms: cU,
-          vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
-          fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-          transparent: true,
-          fog: false,
-          overdraw:true,
-          side: game.THREE.DoubleSide,
-          needsUpdate: true
-        });
+      }
+      if(window.skullzMod != null){
+        window.skullzMod.position.x = 0;
+        window.skullzMod.position.y = 5;
+        window.skullzMod.position.z = -15;
+        window.skullzMod.item.velocity.x = 0;
+        window.skullzMod.item.velocity.y = 0;
+        window.skullzMod.item.velocity.z = 0; 
+        cU.time.value += 0.2 * delta;
+      //customUniforms.time.value += delta;
+    }
 
-        */
-
-        // http://threejs.org/examples/webgl_shader_lava.html
-        lavaTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg');
-        lavaTexture.wrapS = lavaTexture.wrapT = game.THREE.RepeatWrapping; 
-
-        noiseTexture = new game.THREE.ImageUtils.loadTexture( 'textures/cloud.png' );
-        noiseTexture.wrapS = noiseTexture.wrapT = game.THREE.RepeatWrapping; 
-
-        cU = customUniforms  = {
-
-          fogDensity: { type: "f", value: 0 },
-          fogColor: { type: "v3", value: new game.THREE.Vector3( 0, 0, 0 ) },
-          time: { type: "f", value: 1.0 },
-          resolution: { type: "v2", value: new game.THREE.Vector2() },
-          uvScale: { type: "v2", value: new game.THREE.Vector2( 0.5, 0.5 ) },
-          texture1: { type: "t", value: noiseTexture },
-          texture2: { type: "t", value: lavaTexture }
-
-        };
-
-
-
-        var customMaterial = new game.THREE.ShaderMaterial( {
-          uniforms: cU,
-          vertexShader: document.getElementById( 'vertexShader2' ).textContent,
-          fragmentShader: document.getElementById( 'fragmentShader2' ).textContent,
-          transparent: true,
-          fog: false,
-          overdraw:true,
-          side: game.THREE.DoubleSide,
-          needsUpdate: true
-        } );
+    try{
+      wrapTexture();
+      window.skullcraft.material = material
+      createStarField();
+      window.gameCube.material.materials = [material2,material2,material2,material2,material2,material2]
+      
+      //game.renderer.clear();
+      postprocessor.composer.render( 0.01 )
         
-        window.skullzMod.item.mesh.children[0].material = customMaterial;
+    }catch(e){
+      console.log(e)
+    }
 
+  })
+  
+  
+  postprocessor = voxelpp(game)
+  require("./scripts/ConvolutionShader")
+  require("./scripts/FilmShader")
+  require("./scripts/CopyShader")
+  require("./scripts/BloomPass")
+  require("./scripts/FilmPass")
+  var effectBloom = new game.THREE.BloomPass( 1.25 );
+  var effectFilm = new game.THREE.FilmPass( 0.35, 0.95, 2048, false );
+  effectFilm.renderToScreen = true;
+  //postprocessor.addPass('RenderPass', game.scene, game.camera)
+  //postprocessor.addPass( effectBloom );
+  //postprocessor.addPass( effectFilm );
+  
 
-
-  };
-  skullz.src = 'models/vs.png';
-
-  }
-  if(window.skullzMod != null){
-    window.skullzMod.position.x = 0;
-    window.skullzMod.position.y = 5;
-    window.skullzMod.position.z = -15;
-    window.skullzMod.item.velocity.x = 0;
-    window.skullzMod.item.velocity.y = 0;
-    window.skullzMod.item.velocity.z = 0; 
-    cU.time.value += 0.2 * delta;
-    //customUniforms.time.value += delta;
-  }
-
-  try{
-    wrapTexture();
-    window.skullcraft.material = material
-    createStarField();
-    window.gameCube.material.materials = [material2,material2,material2,material2,material2,material2]
-  }catch(e){
-    console.log(e)
-  }
-
-})
 
 });
 
-},{"tic":2,"voxel":66,"voxel-critter":3,"voxel-engine":17,"voxel-perlin-terrain":54,"voxel-physical":56,"voxel-player":60}],2:[function(require,module,exports){
+},{"./scripts/BloomPass":79,"./scripts/ConvolutionShader":80,"./scripts/CopyShader":81,"./scripts/FilmPass":82,"./scripts/FilmShader":83,"tic":2,"voxel":73,"voxel-critter":3,"voxel-engine":17,"voxel-perlin-terrain":54,"voxel-physical":56,"voxel-player":60,"voxel-pp":62}],2:[function(require,module,exports){
 /*
  * tic
  * https://github.com/shama/tic
@@ -37338,7 +37357,7 @@ Creature.prototype.notice = function (target, opts) {
     }, opts.interval);
 };
 
-},{"events":72,"inherits":8}],8:[function(require,module,exports){
+},{"events":84,"inherits":8}],8:[function(require,module,exports){
 module.exports = inherits
 
 function inherits (c, p, proto) {
@@ -37676,7 +37695,7 @@ Chunker.prototype.voxelVector = function(pos) {
   return [vx, vy, vz]
 };
 
-},{"events":72,"inherits":16}],11:[function(require,module,exports){
+},{"events":84,"inherits":16}],11:[function(require,module,exports){
 var chunker = require('./chunker')
 
 module.exports = function(opts) {
@@ -38977,7 +38996,7 @@ Game.prototype.destroy = function() {
   clearInterval(this.timer)
 }
 
-},{"./lib/detector":18,"./lib/stats":19,"__browserify_process":76,"aabb-3d":20,"collide-3d-tilemap":21,"events":72,"gl-matrix":22,"inherits":23,"interact":24,"kb-controls":33,"path":73,"pin-it":38,"raf":39,"spatial-events":40,"three":42,"tic":2,"voxel":49,"voxel-control":43,"voxel-mesh":44,"voxel-physical":56,"voxel-raycast":45,"voxel-region-change":46,"voxel-texture":62,"voxel-view":47}],18:[function(require,module,exports){
+},{"./lib/detector":18,"./lib/stats":19,"__browserify_process":88,"aabb-3d":20,"collide-3d-tilemap":21,"events":84,"gl-matrix":22,"inherits":23,"interact":24,"kb-controls":33,"path":85,"pin-it":38,"raf":39,"spatial-events":40,"three":42,"tic":2,"voxel":49,"voxel-control":43,"voxel-mesh":44,"voxel-physical":56,"voxel-raycast":45,"voxel-region-change":46,"voxel-texture":69,"voxel-view":47}],18:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  * @author mr.doob / http://mrdoob.com/
@@ -42583,7 +42602,7 @@ function usedrag(el) {
   return ee
 }
 
-},{"drag-stream":25,"events":72,"fullscreen":31,"pointer-lock":32,"stream":74}],25:[function(require,module,exports){
+},{"drag-stream":25,"events":84,"fullscreen":31,"pointer-lock":32,"stream":86}],25:[function(require,module,exports){
 module.exports = dragstream
 
 var Stream = require('stream')
@@ -42651,7 +42670,7 @@ function dragstream(el) {
   }
 }
 
-},{"domnode-dom":26,"stream":74,"through":30}],26:[function(require,module,exports){
+},{"domnode-dom":26,"stream":86,"through":30}],26:[function(require,module,exports){
 module.exports = require('./lib/index')
 
 },{"./lib/index":27}],27:[function(require,module,exports){
@@ -42801,7 +42820,7 @@ function valueFromElement(el) {
   return el.value
 }
 
-},{"stream":74}],29:[function(require,module,exports){
+},{"stream":86}],29:[function(require,module,exports){
 module.exports = DOMStream
 
 var Stream = require('stream').Stream
@@ -42883,7 +42902,7 @@ proto.constructTextPlain = function(data) {
   return [textNode]
 }
 
-},{"stream":74}],30:[function(require,module,exports){
+},{"stream":86}],30:[function(require,module,exports){
 var process=require("__browserify_process");var Stream = require('stream')
 
 // through
@@ -42983,7 +43002,7 @@ function through (write, end) {
 }
 
 
-},{"__browserify_process":76,"stream":74}],31:[function(require,module,exports){
+},{"__browserify_process":88,"stream":86}],31:[function(require,module,exports){
 module.exports = fullscreen
 fullscreen.available = available
 
@@ -43074,7 +43093,7 @@ function shim(el) {
     el.oRequestFullScreen)
 }
 
-},{"events":72}],32:[function(require,module,exports){
+},{"events":84}],32:[function(require,module,exports){
 module.exports = pointer
 
 pointer.available = available
@@ -43238,7 +43257,7 @@ function shim(el) {
     null
 }
 
-},{"events":72,"stream":74}],33:[function(require,module,exports){
+},{"events":84,"stream":86}],33:[function(require,module,exports){
 var ever = require('ever')
   , vkey = require('vkey')
   , max = Math.max
@@ -43447,7 +43466,7 @@ Ever.typeOf = (function () {
     };
 })();;
 
-},{"./init.json":35,"./types.json":36,"events":72}],35:[function(require,module,exports){
+},{"./init.json":35,"./types.json":36,"events":84}],35:[function(require,module,exports){
 module.exports={
   "initEvent" : [
     "type",
@@ -43802,7 +43821,7 @@ function raf(el) {
 raf.polyfill = _raf
 raf.now = function() { return Date.now() }
 
-},{"events":72}],40:[function(require,module,exports){
+},{"events":84}],40:[function(require,module,exports){
 module.exports = SpatialEventEmitter
 
 var slice = [].slice
@@ -80092,7 +80111,7 @@ if (typeof exports !== 'undefined') {
   this['THREE'] = THREE;
 }
 
-},{"__browserify_process":76}],43:[function(require,module,exports){
+},{"__browserify_process":88}],43:[function(require,module,exports){
 module.exports = control
 
 var Stream = require('stream').Stream
@@ -80375,7 +80394,7 @@ function clamp(value, to) {
   return isFinite(to) ? max(min(value, to), -to) : value
 }
 
-},{"stream":74}],44:[function(require,module,exports){
+},{"stream":86}],44:[function(require,module,exports){
 var THREE = require('three')
 
 module.exports = function(data, mesher, scaleFactor, three) {
@@ -80795,7 +80814,7 @@ function coordinates(spatial, box, regionWidth) {
  
   return emitter
 }
-},{"aabb-3d":20,"events":72}],47:[function(require,module,exports){
+},{"aabb-3d":20,"events":84}],47:[function(require,module,exports){
 var process=require("__browserify_process");var THREE, temporaryPosition, temporaryVector
 
 module.exports = function(three, opts) {
@@ -80883,7 +80902,7 @@ View.prototype.appendTo = function(element) {
 
   this.resizeWindow(this.width,this.height)
 }
-},{"__browserify_process":76}],48:[function(require,module,exports){
+},{"__browserify_process":88}],48:[function(require,module,exports){
 var events = require('events')
 var inherits = require('inherits')
 
@@ -81020,7 +81039,7 @@ Chunker.prototype.voxelVector = function(pos) {
   return [vx, vy, vz]
 };
 
-},{"events":72,"inherits":23}],49:[function(require,module,exports){
+},{"events":84,"inherits":23}],49:[function(require,module,exports){
 var chunker = require('./chunker')
 
 module.exports = function(opts) {
@@ -122339,6 +122358,470 @@ Skin.prototype.createPlayerObject = function(scene) {
   return playerGroup
 }
 },{}],62:[function(require,module,exports){
+module.exports = function(game) {
+  var THREE = game.THREE
+    , EffectComposer = Composer.EffectComposer = require('three-effectcomposer')(THREE)
+    , renderer = game.renderer || game.view.renderer
+    , used = false
+    , composer
+
+  game.render = function render() {
+    return used ? composer.composer.render() : renderer.render(game.scene, game.camera)
+  };
+
+  function Composer() {
+    var composer = this.composer = new EffectComposer(renderer)
+    composer.passes.push(new EffectComposer.RenderPass(game.scene, game.camera))
+
+    this.passes = composer.passes
+    this.updateRenderToScreen()
+  };
+
+  Composer.prototype.use = function(params) {
+    params = params || {}
+    if (typeof params === 'string') params = {
+      fragmentShader: params
+    }
+
+    params.fragmentShader = params.fragmentShader || EffectComposer.CopyShader.fragmentShader
+    params.vertexShader = params.vertexShader || EffectComposer.CopyShader.vertexShader
+    params.uniforms = THREE.UniformsUtils.merge([ EffectComposer.CopyShader.uniforms, params.uniforms || {} ])
+
+    this.passes.push(new EffectComposer.ShaderPass(params))
+    this.updateRenderToScreen()
+
+    return this
+  };
+
+  Composer.prototype.addPass = function(pass, params) {
+    if (typeof pass === 'string') {
+      pass = EffectComposer[pass].apply(this, [].slice.call(arguments, 1))
+    }
+    this.composer.addPass(pass)
+    this.updateRenderToScreen()
+
+    return pass
+  };
+
+  Composer.prototype.updateRenderToScreen = function() {
+    used = this.passes.length > 1
+    this.passes.slice(0, -1).forEach(function(pass) {
+      pass.renderToScreen = false
+    })
+    this.passes.slice(-1).forEach(function(pass) {
+      pass.renderToScreen = true
+    })
+  };
+
+  Composer.prototype.EffectComposer = EffectComposer
+  Composer.prototype.ClearMaskPass = EffectComposer.ClearMaskPass
+  Composer.prototype.CopyShader = EffectComposer.CopyShader
+  Composer.prototype.ShaderPass = EffectComposer.ShaderPass
+  Composer.prototype.RenderPass = EffectComposer.RenderPass
+  Composer.prototype.MaskPass = EffectComposer.MaskPass
+  Composer.prototype.THREE = THREE
+
+  composer = new Composer
+
+  return composer
+};
+
+},{"three-effectcomposer":63}],63:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+module.exports = function(THREE) {
+  var CopyShader = EffectComposer.CopyShader = require('three-copyshader')
+    , RenderPass = EffectComposer.RenderPass = require('./lib/renderpass')(THREE)
+    , ShaderPass = EffectComposer.ShaderPass = require('./lib/shaderpass')(THREE, EffectComposer)
+    , MaskPass = EffectComposer.MaskPass = require('./lib/maskpass')(THREE)
+    , ClearMaskPass = EffectComposer.ClearMaskPass = require('./lib/clearmaskpass')(THREE)
+
+  function EffectComposer( renderer, renderTarget ) {
+    this.renderer = renderer;
+
+    if ( renderTarget === undefined ) {
+      var width = window.innerWidth || 1;
+      var height = window.innerHeight || 1;
+      var parameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
+
+      renderTarget = new THREE.WebGLRenderTarget( width, height, parameters );
+    }
+
+    this.renderTarget1 = renderTarget;
+    this.renderTarget2 = renderTarget.clone();
+
+    this.writeBuffer = this.renderTarget1;
+    this.readBuffer = this.renderTarget2;
+
+    this.passes = [];
+
+    this.copyPass = new ShaderPass( CopyShader );
+  };
+
+  EffectComposer.prototype = {
+    swapBuffers: function() {
+
+      var tmp = this.readBuffer;
+      this.readBuffer = this.writeBuffer;
+      this.writeBuffer = tmp;
+
+    },
+
+    addPass: function ( pass ) {
+
+      this.passes.push( pass );
+
+    },
+
+    insertPass: function ( pass, index ) {
+
+      this.passes.splice( index, 0, pass );
+
+    },
+
+    render: function ( delta ) {
+
+      this.writeBuffer = this.renderTarget1;
+      this.readBuffer = this.renderTarget2;
+
+      var maskActive = false;
+
+      var pass, i, il = this.passes.length;
+
+      for ( i = 0; i < il; i ++ ) {
+
+        pass = this.passes[ i ];
+
+        if ( !pass.enabled ) continue;
+
+        pass.render( this.renderer, this.writeBuffer, this.readBuffer, delta, maskActive );
+
+        if ( pass.needsSwap ) {
+
+          if ( maskActive ) {
+
+            var context = this.renderer.context;
+
+            context.stencilFunc( context.NOTEQUAL, 1, 0xffffffff );
+
+            this.copyPass.render( this.renderer, this.writeBuffer, this.readBuffer, delta );
+
+            context.stencilFunc( context.EQUAL, 1, 0xffffffff );
+
+          }
+
+          this.swapBuffers();
+
+        }
+
+        if ( pass instanceof MaskPass ) {
+
+          maskActive = true;
+
+        } else if ( pass instanceof ClearMaskPass ) {
+
+          maskActive = false;
+
+        }
+
+      }
+
+    },
+
+    reset: function ( renderTarget ) {
+
+      if ( renderTarget === undefined ) {
+
+        renderTarget = this.renderTarget1.clone();
+
+        renderTarget.width = window.innerWidth;
+        renderTarget.height = window.innerHeight;
+
+      }
+
+      this.renderTarget1 = renderTarget;
+      this.renderTarget2 = renderTarget.clone();
+
+      this.writeBuffer = this.renderTarget1;
+      this.readBuffer = this.renderTarget2;
+
+    },
+
+    setSize: function ( width, height ) {
+
+      var renderTarget = this.renderTarget1.clone();
+
+      renderTarget.width = width;
+      renderTarget.height = height;
+
+      this.reset( renderTarget );
+
+    }
+
+  };
+
+  // shared ortho camera
+
+  EffectComposer.camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
+
+  EffectComposer.quad = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), null );
+
+  EffectComposer.scene = new THREE.Scene();
+  EffectComposer.scene.add( EffectComposer.quad );
+
+  return EffectComposer
+};
+},{"./lib/clearmaskpass":64,"./lib/maskpass":65,"./lib/renderpass":66,"./lib/shaderpass":67,"three-copyshader":68}],64:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+module.exports = function(THREE) {
+  function ClearMaskPass() {
+    if (!(this instanceof ClearMaskPass)) return new ClearMaskPass(scene, camera);
+    this.enabled = true;
+  };
+
+  ClearMaskPass.prototype = {
+    render: function ( renderer, writeBuffer, readBuffer, delta ) {
+      var context = renderer.context;
+      context.disable( context.STENCIL_TEST );
+    }
+  };
+
+  return ClearMaskPass
+};
+},{}],65:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+module.exports = function(THREE) {
+  function MaskPass( scene, camera ) {
+    if (!(this instanceof MaskPass)) return new MaskPass(scene, camera);
+
+    this.scene = scene;
+    this.camera = camera;
+
+    this.enabled = true;
+    this.clear = true;
+    this.needsSwap = false;
+
+    this.inverse = false;
+  };
+
+  MaskPass.prototype = {
+
+    render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+      var context = renderer.context;
+
+      // don't update color or depth
+
+      context.colorMask( false, false, false, false );
+      context.depthMask( false );
+
+      // set up stencil
+
+      var writeValue, clearValue;
+
+      if ( this.inverse ) {
+
+        writeValue = 0;
+        clearValue = 1;
+
+      } else {
+
+        writeValue = 1;
+        clearValue = 0;
+
+      }
+
+      context.enable( context.STENCIL_TEST );
+      context.stencilOp( context.REPLACE, context.REPLACE, context.REPLACE );
+      context.stencilFunc( context.ALWAYS, writeValue, 0xffffffff );
+      context.clearStencil( clearValue );
+
+      // draw into the stencil buffer
+
+      renderer.render( this.scene, this.camera, readBuffer, this.clear );
+      renderer.render( this.scene, this.camera, writeBuffer, this.clear );
+
+      // re-enable update of color and depth
+
+      context.colorMask( true, true, true, true );
+      context.depthMask( true );
+
+      // only render where stencil is set to 1
+
+      context.stencilFunc( context.EQUAL, 1, 0xffffffff );  // draw if == 1
+      context.stencilOp( context.KEEP, context.KEEP, context.KEEP );
+
+    }
+
+  };
+
+  return MaskPass
+};
+
+},{}],66:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+module.exports = function(THREE) {
+  function RenderPass( scene, camera, overrideMaterial, clearColor, clearAlpha ) {
+    if (!(this instanceof RenderPass)) return new RenderPass(scene, camera, overrideMaterial, clearColor, clearAlpha);
+
+    this.scene = scene;
+    this.camera = camera;
+
+    this.overrideMaterial = overrideMaterial;
+
+    this.clearColor = clearColor;
+    this.clearAlpha = ( clearAlpha !== undefined ) ? clearAlpha : 1;
+
+    this.oldClearColor = new THREE.Color();
+    this.oldClearAlpha = 1;
+
+    this.enabled = true;
+    this.clear = true;
+    this.needsSwap = false;
+
+  };
+
+  RenderPass.prototype = {
+
+    render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+      this.scene.overrideMaterial = this.overrideMaterial;
+
+      if ( this.clearColor ) {
+
+        this.oldClearColor.copy( renderer.getClearColor() );
+        this.oldClearAlpha = renderer.getClearAlpha();
+
+        renderer.setClearColor( this.clearColor, this.clearAlpha );
+
+      }
+
+      renderer.render( this.scene, this.camera, readBuffer, this.clear );
+
+      if ( this.clearColor ) {
+
+        renderer.setClearColor( this.oldClearColor, this.oldClearAlpha );
+
+      }
+
+      this.scene.overrideMaterial = null;
+
+    }
+
+  };
+
+  return RenderPass;
+
+};
+
+},{}],67:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+module.exports = function(THREE, EffectComposer) {
+  function ShaderPass( shader, textureID ) {
+    if (!(this instanceof ShaderPass)) return new ShaderPass(shader, textureID);
+
+    this.textureID = ( textureID !== undefined ) ? textureID : "tDiffuse";
+
+    this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+
+    this.material = new THREE.ShaderMaterial( {
+
+      uniforms: this.uniforms,
+      vertexShader: shader.vertexShader,
+      fragmentShader: shader.fragmentShader
+
+    } );
+
+    this.renderToScreen = false;
+
+    this.enabled = true;
+    this.needsSwap = true;
+    this.clear = false;
+
+  };
+
+  ShaderPass.prototype = {
+
+    render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+      if ( this.uniforms[ this.textureID ] ) {
+
+        this.uniforms[ this.textureID ].value = readBuffer;
+
+      }
+
+      EffectComposer.quad.material = this.material;
+
+      if ( this.renderToScreen ) {
+
+        renderer.render( EffectComposer.scene, EffectComposer.camera );
+
+      } else {
+
+        renderer.render( EffectComposer.scene, EffectComposer.camera, writeBuffer, this.clear );
+
+      }
+
+    }
+
+  };
+
+  return ShaderPass;
+
+};
+},{}],68:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ *
+ * Full-screen textured quad shader
+ */
+
+module.exports = {
+  uniforms: {
+    "tDiffuse": { type: "t", value: null },
+    "opacity":  { type: "f", value: 1.0 }
+  },
+  vertexShader: [
+    "varying vec2 vUv;",
+
+    "void main() {",
+
+      "vUv = uv;",
+      "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+    "}"
+  ].join("\n"),
+  fragmentShader: [
+    "uniform float opacity;",
+
+    "uniform sampler2D tDiffuse;",
+
+    "varying vec2 vUv;",
+
+    "void main() {",
+
+      "vec4 texel = texture2D( tDiffuse, vUv );",
+      "gl_FragColor = opacity * texel;",
+
+    "}"
+  ].join("\n")
+};
+
+},{}],69:[function(require,module,exports){
 var tic = require('tic')();
 var createAtlas = require('atlaspack');
 
@@ -122725,7 +123208,7 @@ function memoize(func) {
   return memoized;
 }
 
-},{"atlaspack":63,"tic":64}],63:[function(require,module,exports){
+},{"atlaspack":70,"tic":71}],70:[function(require,module,exports){
 /*
  * atlaspack
  * https://github.com/shama/atlaspack
@@ -122983,7 +123466,7 @@ Atlas.prototype._debug = function() {
   });
 };
 
-},{}],64:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 /*
  * tic
  * https://github.com/shama/tic
@@ -123030,7 +123513,7 @@ Tic.prototype.tick = function(dt) {
   });
 };
 
-},{}],65:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 var events = require('events')
 var inherits = require('inherits')
 
@@ -123167,7 +123650,7 @@ Chunker.prototype.voxelVector = function(pos) {
   return [vx, vy, vz]
 };
 
-},{"events":72,"inherits":71}],66:[function(require,module,exports){
+},{"events":84,"inherits":78}],73:[function(require,module,exports){
 var chunker = require('./chunker')
 
 module.exports = function(opts) {
@@ -123263,7 +123746,7 @@ module.exports.generateExamples = function() {
 }
 
 
-},{"./chunker":65,"./meshers/culled":67,"./meshers/greedy":68,"./meshers/monotone":69,"./meshers/stupid":70}],67:[function(require,module,exports){
+},{"./chunker":72,"./meshers/culled":74,"./meshers/greedy":75,"./meshers/monotone":76,"./meshers/stupid":77}],74:[function(require,module,exports){
 //Naive meshing (with face culling)
 function CulledMesh(volume, dims) {
   //Precalculate direction vectors for convenience
@@ -123315,7 +123798,7 @@ if(exports) {
   exports.mesher = CulledMesh;
 }
 
-},{}],68:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 var GreedyMesh = (function() {
 //Cache buffer internally
 var mask = new Int32Array(4096);
@@ -123432,7 +123915,7 @@ if(exports) {
   exports.mesher = GreedyMesh;
 }
 
-},{}],69:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 "use strict";
 
 var MonotoneMesh = (function(){
@@ -123685,7 +124168,7 @@ if(exports) {
   exports.mesher = MonotoneMesh;
 }
 
-},{}],70:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 //The stupidest possible way to generate a Minecraft mesh (I think)
 function StupidMesh(volume, dims) {
   var vertices = [], faces = [], x = [0,0,0], n = 0;
@@ -123721,7 +124204,7 @@ if(exports) {
   exports.mesher = StupidMesh;
 }
 
-},{}],71:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 module.exports = inherits
 
 function inherits (c, p, proto) {
@@ -123752,7 +124235,430 @@ function inherits (c, p, proto) {
 //inherits(Child, Parent)
 //new Child
 
-},{}],72:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+window.game.THREE.BloomPass = function ( strength, kernelSize, sigma, resolution ) {
+
+	strength = ( strength !== undefined ) ? strength : 1;
+	kernelSize = ( kernelSize !== undefined ) ? kernelSize : 25;
+	sigma = ( sigma !== undefined ) ? sigma : 4.0;
+	resolution = ( resolution !== undefined ) ? resolution : 256;
+
+	// render targets
+
+	var pars = { minFilter: window.game.THREE.LinearFilter, magFilter: window.game.THREE.LinearFilter, format: window.game.THREE.RGBFormat };
+
+	this.renderTargetX = new window.game.THREE.WebGLRenderTarget( resolution, resolution, pars );
+	this.renderTargetY = new window.game.THREE.WebGLRenderTarget( resolution, resolution, pars );
+
+	// copy material
+
+	if ( window.game.THREE.CopyShader === undefined )
+		console.error( "THREE.BloomPass relies on THREE.CopyShader" );
+
+	var copyShader = window.game.THREE.CopyShader;
+
+	this.copyUniforms = window.game.THREE.UniformsUtils.clone( copyShader.uniforms );
+
+	this.copyUniforms[ "opacity" ].value = strength;
+
+	this.materialCopy = new window.game.THREE.ShaderMaterial( {
+
+		uniforms: this.copyUniforms,
+		vertexShader: copyShader.vertexShader,
+		fragmentShader: copyShader.fragmentShader,
+		blending: window.game.THREE.AdditiveBlending,
+		transparent: true
+
+	} );
+
+	// convolution material
+
+	if ( window.game.THREE.ConvolutionShader === undefined )
+		console.error( "THREE.BloomPass relies on THREE.ConvolutionShader" );
+
+	var convolutionShader = window.game.THREE.ConvolutionShader;
+
+	this.convolutionUniforms = window.game.THREE.UniformsUtils.clone( convolutionShader.uniforms );
+
+	this.convolutionUniforms[ "uImageIncrement" ].value = window.game.THREE.BloomPass.blurx;
+	this.convolutionUniforms[ "cKernel" ].value = window.game.THREE.ConvolutionShader.buildKernel( sigma );
+
+	this.materialConvolution = new window.game.THREE.ShaderMaterial( {
+
+		uniforms: this.convolutionUniforms,
+		vertexShader:  convolutionShader.vertexShader,
+		fragmentShader: convolutionShader.fragmentShader,
+		defines: {
+			"KERNEL_SIZE_FLOAT": kernelSize.toFixed( 1 ),
+			"KERNEL_SIZE_INT": kernelSize.toFixed( 0 )
+		}
+
+	} );
+
+	this.enabled = true;
+	this.needsSwap = false;
+	this.clear = false;
+
+};
+
+window.game.THREE.BloomPass.prototype = {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+
+		if ( maskActive ) renderer.context.disable( renderer.context.STENCIL_TEST );
+
+		// Render quad with blured scene into texture (convolution pass 1)
+
+		postprocessor.EffectComposer.quad.material = this.materialConvolution;
+
+		this.convolutionUniforms[ "tDiffuse" ].value = readBuffer;
+		this.convolutionUniforms[ "uImageIncrement" ].value = window.game.THREE.BloomPass.blurX;
+
+		renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera, this.renderTargetX, true );
+
+
+		// Render quad with blured scene into texture (convolution pass 2)
+
+		this.convolutionUniforms[ "tDiffuse" ].value = this.renderTargetX;
+		this.convolutionUniforms[ "uImageIncrement" ].value = window.game.THREE.BloomPass.blurY;
+
+		renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera, this.renderTargetY, true );
+
+		// Render original scene with superimposed blur to texture
+
+		postprocessor.EffectComposer.quad.material = this.materialCopy;
+
+		this.copyUniforms[ "tDiffuse" ].value = this.renderTargetY;
+
+		if ( maskActive ) renderer.context.enable( renderer.context.STENCIL_TEST );
+
+		renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera, readBuffer, this.clear );
+
+	}
+
+};
+
+window.game.THREE.BloomPass.blurX = new window.game.THREE.Vector2( 0.001953125, 0.0 );
+window.game.THREE.BloomPass.blurY = new window.game.THREE.Vector2( 0.0, 0.001953125 );
+
+},{}],80:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ *
+ * Convolution shader
+ * ported from o3d sample to WebGL / GLSL
+ * http://o3d.googlecode.com/svn/trunk/samples/convolution.html
+ */
+
+window.game.THREE.ConvolutionShader = {
+
+	defines: {
+
+		"KERNEL_SIZE_FLOAT": "25.0",
+		"KERNEL_SIZE_INT": "25",
+
+	},
+
+	uniforms: {
+
+		"tDiffuse":        { type: "t", value: null },
+		"uImageIncrement": { type: "v2", value: new window.game.THREE.Vector2( 0.001953125, 0.0 ) },
+		"cKernel":         { type: "fv1", value: [] }
+
+	},
+
+	vertexShader: [
+
+		"uniform vec2 uImageIncrement;",
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vUv = uv - ( ( KERNEL_SIZE_FLOAT - 1.0 ) / 2.0 ) * uImageIncrement;",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+		"}"
+
+	].join("\n"),
+
+	fragmentShader: [
+
+		"uniform float cKernel[ KERNEL_SIZE_INT ];",
+
+		"uniform sampler2D tDiffuse;",
+		"uniform vec2 uImageIncrement;",
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vec2 imageCoord = vUv;",
+			"vec4 sum = vec4( 0.0, 0.0, 0.0, 0.0 );",
+
+			"for( int i = 0; i < KERNEL_SIZE_INT; i ++ ) {",
+
+				"sum += texture2D( tDiffuse, imageCoord ) * cKernel[ i ];",
+				"imageCoord += uImageIncrement;",
+
+			"}",
+
+			"gl_FragColor = sum;",
+
+		"}"
+
+
+	].join("\n"),
+
+	buildKernel: function ( sigma ) {
+
+		// We lop off the sqrt(2 * pi) * sigma term, since we're going to normalize anyway.
+
+		function gauss( x, sigma ) {
+
+			return Math.exp( - ( x * x ) / ( 2.0 * sigma * sigma ) );
+
+		}
+
+		var i, values, sum, halfWidth, kMaxKernelSize = 25, kernelSize = 2 * Math.ceil( sigma * 3.0 ) + 1;
+
+		if ( kernelSize > kMaxKernelSize ) kernelSize = kMaxKernelSize;
+		halfWidth = ( kernelSize - 1 ) * 0.5;
+
+		values = new Array( kernelSize );
+		sum = 0.0;
+		for ( i = 0; i < kernelSize; ++i ) {
+
+			values[ i ] = gauss( i - halfWidth, sigma );
+			sum += values[ i ];
+
+		}
+
+		// normalize the kernel
+
+		for ( i = 0; i < kernelSize; ++i ) values[ i ] /= sum;
+
+		return values;
+
+	}
+
+};
+
+},{}],81:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ *
+ * Full-screen textured quad shader
+ */
+
+window.game.THREE.CopyShader = {
+
+	uniforms: {
+
+		"tDiffuse": { type: "t", value: null },
+		"opacity":  { type: "f", value: 1.0 }
+
+	},
+
+	vertexShader: [
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vUv = uv;",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+		"}"
+
+	].join("\n"),
+
+	fragmentShader: [
+
+		"uniform float opacity;",
+
+		"uniform sampler2D tDiffuse;",
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vec4 texel = texture2D( tDiffuse, vUv );",
+			"gl_FragColor = opacity * texel;",
+
+		"}"
+
+	].join("\n")
+
+};
+
+},{}],82:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+window.game.THREE.FilmPass = function ( noiseIntensity, scanlinesIntensity, scanlinesCount, grayscale ) {
+
+	if ( window.game.THREE.FilmShader === undefined )
+		console.error( "THREE.FilmPass relies on THREE.FilmShader" );
+
+	var shader = window.game.THREE.FilmShader;
+
+	this.uniforms = window.game.THREE.UniformsUtils.clone( shader.uniforms );
+
+	this.material = new window.game.THREE.ShaderMaterial( {
+
+		uniforms: this.uniforms,
+		vertexShader: shader.vertexShader,
+		fragmentShader: shader.fragmentShader
+
+	} );
+
+	if ( grayscale !== undefined )	this.uniforms.grayscale.value = grayscale;
+	if ( noiseIntensity !== undefined ) this.uniforms.nIntensity.value = noiseIntensity;
+	if ( scanlinesIntensity !== undefined ) this.uniforms.sIntensity.value = scanlinesIntensity;
+	if ( scanlinesCount !== undefined ) this.uniforms.sCount.value = scanlinesCount;
+
+	this.enabled = true;
+	this.renderToScreen = false;
+	this.needsSwap = true;
+
+};
+
+window.game.THREE.FilmPass.prototype = {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+		this.uniforms[ "tDiffuse" ].value = readBuffer;
+		this.uniforms[ "time" ].value += delta;
+
+		postprocessor.EffectComposer.quad.material = this.material;
+
+		if ( this.renderToScreen ) {
+
+			renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera );
+
+		} else {
+
+			renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera, writeBuffer, false );
+
+		}
+
+	}
+
+};
+
+},{}],83:[function(require,module,exports){
+/**
+ * @author alteredq / http://alteredqualia.com/
+ *
+ * Film grain & scanlines shader
+ *
+ * - ported from HLSL to WebGL / GLSL
+ * http://www.truevision3d.com/forums/showcase/staticnoise_colorblackwhite_scanline_shaders-t18698.0.html
+ *
+ * Screen Space Static Postprocessor
+ *
+ * Produces an analogue noise overlay similar to a film grain / TV static
+ *
+ * Original implementation and noise algorithm
+ * Pat 'Hawthorne' Shearon
+ *
+ * Optimized scanlines + noise version with intensity scaling
+ * Georg 'Leviathan' Steinrohder
+ *
+ * This version is provided under a Creative Commons Attribution 3.0 License
+ * http://creativecommons.org/licenses/by/3.0/
+ */
+
+window.game.THREE.FilmShader = {
+
+	uniforms: {
+
+		"tDiffuse":   { type: "t", value: null },
+		"time":       { type: "f", value: 0.0 },
+		"nIntensity": { type: "f", value: 0.5 },
+		"sIntensity": { type: "f", value: 0.05 },
+		"sCount":     { type: "f", value: 4096 },
+		"grayscale":  { type: "i", value: 1 }
+
+	},
+
+	vertexShader: [
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vUv = uv;",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+		"}"
+
+	].join("\n"),
+
+	fragmentShader: [
+
+		// control parameter
+		"uniform float time;",
+
+		"uniform bool grayscale;",
+
+		// noise effect intensity value (0 = no effect, 1 = full effect)
+		"uniform float nIntensity;",
+
+		// scanlines effect intensity value (0 = no effect, 1 = full effect)
+		"uniform float sIntensity;",
+
+		// scanlines effect count value (0 = no effect, 4096 = full effect)
+		"uniform float sCount;",
+
+		"uniform sampler2D tDiffuse;",
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			// sample the source
+			"vec4 cTextureScreen = texture2D( tDiffuse, vUv );",
+
+			// make some noise
+			"float x = vUv.x * vUv.y * time *  1000.0;",
+			"x = mod( x, 13.0 ) * mod( x, 123.0 );",
+			"float dx = mod( x, 0.01 );",
+
+			// add noise
+			"vec3 cResult = cTextureScreen.rgb + cTextureScreen.rgb * clamp( 0.1 + dx * 100.0, 0.0, 1.0 );",
+
+			// get us a sine and cosine
+			"vec2 sc = vec2( sin( vUv.y * sCount ), cos( vUv.y * sCount ) );",
+
+			// add scanlines
+			"cResult += cTextureScreen.rgb * vec3( sc.x, sc.y, sc.x ) * sIntensity;",
+
+			// interpolate between source and result by intensity
+			"cResult = cTextureScreen.rgb + clamp( nIntensity, 0.0,1.0 ) * ( cResult - cTextureScreen.rgb );",
+
+			// convert to grayscale if desired
+			"if( grayscale ) {",
+
+				"cResult = vec3( cResult.r * 0.3 + cResult.g * 0.59 + cResult.b * 0.11 );",
+
+			"}",
+
+			"gl_FragColor =  vec4( cResult, cTextureScreen.a );",
+
+		"}"
+
+	].join("\n")
+
+};
+
+},{}],84:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -123948,7 +124854,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":76}],73:[function(require,module,exports){
+},{"__browserify_process":88}],85:[function(require,module,exports){
 var process=require("__browserify_process");function filter (xs, fn) {
     var res = [];
     for (var i = 0; i < xs.length; i++) {
@@ -124127,7 +125033,7 @@ exports.relative = function(from, to) {
 
 exports.sep = '/';
 
-},{"__browserify_process":76}],74:[function(require,module,exports){
+},{"__browserify_process":88}],86:[function(require,module,exports){
 var events = require('events');
 var util = require('util');
 
@@ -124248,7 +125154,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":72,"util":75}],75:[function(require,module,exports){
+},{"events":84,"util":87}],87:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -124595,7 +125501,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":72}],76:[function(require,module,exports){
+},{"events":84}],88:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
