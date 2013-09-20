@@ -1,4 +1,4 @@
-  $(function(){
+$(function(){
     canvasCallback = $.Callbacks();
     var prCodeInit = function(){
 
@@ -33,6 +33,7 @@
     })
     voxelpp = require('voxel-pp')
     window.game.scene.fog.color = {r:0,g:0,b:0}
+    window.game.view.renderer.autoClear = false;
     var terrainGenerator = perlinTerrain('foobar', 0, 2)
     game.paused = false
 
@@ -155,7 +156,7 @@
 
 
     }
-
+    // call backs for ProcessingJS code
     canvasCallback.add(prCodeInit);
     canvasCallback.add(createText);
     canvasCallback.fire('createText');
@@ -193,73 +194,6 @@
           skullzMod.item.velocity.y = 0;
           skullzMod.item.velocity.z = 0; 
           window.skullzMod = skullzMod;
-
-          /*
-          alternative lava shader from https://github.com/stemkoski/stemkoski.github.com
-
-          lavaTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg');
-          lavaTexture.wrapS = lavaTexture.wrapT = game.THREE.RepeatWrapping; 
-          // multiplier for distortion speed    
-          baseSpeed = 0.02;
-          // number of times to repeat texture in each direction
-          repeatS = repeatT = 0.05;
-
-          // texture used to generate "randomness", distort all other textures
-          noiseTexture = new game.THREE.ImageUtils.loadTexture( 'textures/cloud.png' );
-          noiseTexture.wrapS = noiseTexture.wrapT = game.THREE.RepeatWrapping; 
-          // magnitude of noise effect
-          noiseScale = 0.5;
-          // texture to additively blend with base image texture
-          blendTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg' );
-          blendTexture.wrapS = blendTexture.wrapT = game.THREE.RepeatWrapping; 
-          // multiplier for distortion speed 
-          blendSpeed = 0.01;
-          // adjust lightness/darkness of blended texture
-          blendOffset = 0.25;
-
-          // texture to determine normal displacement
-          bumpTexture = noiseTexture;
-          bumpTexture.wrapS = bumpTexture.wrapT = game.THREE.RepeatWrapping; 
-          // multiplier for distortion speed    
-          bumpSpeed   = 0.15;
-          // magnitude of normal displacement
-          bumpScale   = 40.0;
-      
-          // use "this." to create global object
-          cU = customUniforms = {
-            baseTexture:  { type: "t", value: lavaTexture },
-            baseSpeed:    { type: "f", value: baseSpeed },
-            repeatS:    { type: "f", value: repeatS },
-            repeatT:    { type: "f", value: repeatT },
-            noiseTexture: { type: "t", value: noiseTexture },
-            noiseScale:   { type: "f", value: noiseScale },
-            blendTexture: { type: "t", value: blendTexture },
-            blendSpeed:   { type: "f", value: blendSpeed },
-            blendOffset:  { type: "f", value: blendOffset },
-            bumpTexture:  { type: "t", value: bumpTexture },
-            bumpSpeed:    { type: "f", value: bumpSpeed },
-            bumpScale:    { type: "f", value: bumpScale },
-            alpha:      { type: "f", value: 1.0 },
-            time:       { type: "f", value: 1.0 }
-          };
-      
-          // create custom material from the shader code above
-          //   that is within specially labeled script tags
-
-          customMaterial = new game.THREE.ShaderMaterial( 
-          {
-            uniforms: cU,
-            vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
-            fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-            transparent: true,
-            fog: false,
-            overdraw:true,
-            side: game.THREE.DoubleSide,
-            needsUpdate: true
-          });
-
-  */
-
           // http://threejs.org/examples/webgl_shader_lava.html
           lavaTexture = new game.THREE.ImageUtils.loadTexture( 'textures/lava.jpg');
           lavaTexture.wrapS = lavaTexture.wrapT = game.THREE.RepeatWrapping; 
@@ -293,14 +227,15 @@
           } );
           
           window.skullzMod.item.mesh.children[0].material = customMaterial;
-
-
-
+          onWindowResize();  
         };
         skullz.src = 'models/vs.png';
+        
+        
 
       }
       if(window.skullzMod != null){
+        // hold it in place no need to move for our use
         window.skullzMod.position.x = 0;
         window.skullzMod.position.y = 5;
         window.skullzMod.position.z = -15;
@@ -308,7 +243,9 @@
         window.skullzMod.item.velocity.y = 0;
         window.skullzMod.item.velocity.z = 0; 
         cU.time.value += 0.2 * delta;
-      //customUniforms.time.value += delta;
+        
+        window.game.view.renderer.clear()
+        postprocessor.composer.render( 0.01 )
     }
 
     try{
@@ -316,10 +253,7 @@
       window.skullcraft.material = material
       createStarField();
       window.gameCube.material.materials = [material2,material2,material2,material2,material2,material2]
-      
-      //game.renderer.clear();
-      postprocessor.composer.render( 0.01 )
-        
+
     }catch(e){
       console.log(e)
     }
@@ -328,18 +262,44 @@
   
   
   postprocessor = voxelpp(game)
+   /*
   require("./scripts/ConvolutionShader")
   require("./scripts/FilmShader")
   require("./scripts/CopyShader")
-  require("./scripts/BloomPass")
-  require("./scripts/FilmPass")
-  var effectBloom = new game.THREE.BloomPass( 1.25 );
-  var effectFilm = new game.THREE.FilmPass( 0.35, 0.95, 2048, false );
-  effectFilm.renderToScreen = true;
-  //postprocessor.addPass('RenderPass', game.scene, game.camera)
-  //postprocessor.addPass( effectBloom );
-  //postprocessor.addPass( effectFilm );
+  /*
+  postprocessor.use(require("./scripts/ConvolutionShader"))
+  postprocessor.use(require("./scripts/FilmShader"))
+  postprocessor.use(require("./scripts/CopyShader"))
+  */
   
+  /*require("./scripts/BloomPass")
+  require("./scripts/FilmPass")
+  effectBloom = new game.THREE.BloomPass( 1.25 );
+  effectFilm = new game.THREE.FilmPass( 0.35, 0.95, 2048, false );
+  effectFilm.renderToScreen = true;
+  postprocessor.addPass( effectBloom );
+  postprocessor.addPass( effectFilm );
+  */
+  //postprocessor.addPass('RenderPass', game.scene, game.camera)
+  var bS = new postprocessor.EffectComposer.BloomPass( 1.25 )
+  var fS = new postprocessor.EffectComposer.FilmPass( 0.35, 0.95, 2048, false )
+  fS.renderToScreen = true
+  //postprocessor.addPass( bS )
+  //postprocessor.addPass( fS )
 
+
+  //shaderPass = postprocessor.addPass('ShaderPass', game.scene, game.camera)
+  //ef.renderToScreen = true;
+
+  onWindowResize = function( event ) {
+        customUniforms.resolution.value.x = window.innerWidth;
+        customUniforms.resolution.value.y = window.innerHeight;
+         postprocessor.composer.setSize( window.innerWidth, window.innerHeight );
+         window.game.camera.aspect = window.innerWidth / window.innerHeight;
+         window.game.camera.updateProjectionMatrix();
+         postprocessor.composer.reset();
+  }
+    
+  window.addEventListener( 'resize', onWindowResize, false );    
 
 });

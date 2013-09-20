@@ -41,11 +41,11 @@ window.game.THREE.FilmPass.prototype = {
 
 		if ( this.renderToScreen ) {
 
-			renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera );
+			postprocessor.composer.renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera );
 
 		} else {
 
-			renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera, writeBuffer, false );
+			postprocessor.composer.renderer.render( postprocessor.EffectComposer.scene, postprocessor.EffectComposer.camera, writeBuffer, false );
 
 		}
 
