@@ -30,7 +30,7 @@ $(function(){
       generateChunks: false,
       texturePath: 'textures/',
       controls: { discreteFire: false },
-      materials: [['cake_top'], 'brick', 'dirt', 'obsidian']
+      materials: [['glass2'], 'brick', 'dirt', 'obsidian']
     })
     voxelpp = require('voxel-pp')
     window.game.scene.fog.color = {r:0,g:0,b:0}
@@ -263,30 +263,12 @@ $(function(){
   
   
   postprocessor = voxelpp(game)
-   /*
-  require("./scripts/ConvolutionShader")
-  require("./scripts/FilmShader")
-  require("./scripts/CopyShader")
-  /*
-  postprocessor.use(require("./scripts/ConvolutionShader"))
-  postprocessor.use(require("./scripts/FilmShader"))
-  postprocessor.use(require("./scripts/CopyShader"))
-  */
-  
-  /*require("./scripts/BloomPass")
-  require("./scripts/FilmPass")
-  effectBloom = new game.THREE.BloomPass( 1.25 );
-  effectFilm = new game.THREE.FilmPass( 0.35, 0.95, 2048, false );
-  effectFilm.renderToScreen = true;
-  postprocessor.addPass( effectBloom );
-  postprocessor.addPass( effectFilm );
-  */
-  //postprocessor.addPass('RenderPass', game.scene, game.camera)
   var bS = new postprocessor.EffectComposer.BloomPass( 1.25 )
   var fS = new postprocessor.EffectComposer.FilmPass( 0.35, 0.95, 2048, false )
   fS.renderToScreen = true
   postprocessor.addPass( bS )
   postprocessor.addPass('ShaderPass', postprocessor.EffectComposer.ShaderExtras[ "screen" ])
+  //postprocessor.addPass('ShaderPass', postprocessor.EffectComposer.ShaderExtras[ "film" ])
   //postprocessor.addPass( fS )
   //shaderPass.renderToScreen = true
   //ef.renderToScreen = true;
@@ -123264,7 +123246,7 @@ module.exports = function(THREE) {
 
 			"void main() {",
 
-				"vUv = vec2( uv.x, 1.0 - uv.y );",
+				"vUv = vec2( uv.x, uv.y );",
 				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
 			"}"

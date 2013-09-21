@@ -2,18 +2,18 @@ HDrawablePool pool;
 
 void setup() {
 	size(640,640);
-	H.init(this).background(#202020);
+	H.init(this).background(#000000);
 	smooth();
 
 	final HColorPool colors = new HColorPool()
-		.add(#FFFFFF, 9)
-		.add(#ECECEC, 9)
-		.add(#CCCCCC, 9)
-		.add(#333333, 3)
-		.add(#0095a8, 2)
-		.add(#00616f, 2)
-		.add(#FF3300)
-		.add(#FF6600)
+		.add(#940533, 9)
+		.add(#C0012A, 9)
+		.add(#F5061D, 9)
+		.add(#FF8800, 3)
+		.add(#FFB300, 2)
+		.add(#FB6900, 2)
+		.add(#F63700)
+		.add(#940533)
 	;
 
 	pool = new HDrawablePool(20);
