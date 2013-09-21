@@ -284,11 +284,10 @@ $(function(){
   var bS = new postprocessor.EffectComposer.BloomPass( 1.25 )
   var fS = new postprocessor.EffectComposer.FilmPass( 0.35, 0.95, 2048, false )
   fS.renderToScreen = true
-  //postprocessor.addPass( bS )
+  postprocessor.addPass( bS )
+  postprocessor.addPass('ShaderPass', postprocessor.EffectComposer.ShaderExtras[ "screen" ])
   //postprocessor.addPass( fS )
-
-
-  //shaderPass = postprocessor.addPass('ShaderPass', game.scene, game.camera)
+  //shaderPass.renderToScreen = true
   //ef.renderToScreen = true;
 
   onWindowResize = function( event ) {
