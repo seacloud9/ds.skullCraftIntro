@@ -1,5 +1,6 @@
-ds.skullCraftIntro
-==================
+<h1>
+<a name="dsskullcraftintro" class="anchor" href="#dsskullcraftintro"><span class="octicon octicon-link"></span></a>ds.skullCraftIntro</h1>
+<div style="width:100%; float:left">
 <pre>
  ______  __  __  __  __  __      __      ______  ______  ______  ______ ______  
 /\  ___\/\ \/ / /\ \/\ \/\ \    /\ \    /\  ___\/\  == \/\  __ \/\  ___/\__  _\ 
@@ -8,6 +9,8 @@ ds.skullCraftIntro
   \/_____/\/_/\/_/\/_____/\/_____/\/_____/\/_____/\/_/ /_/\/_/\/_/\/_/     \/_/ 
                                                                                                                                                                                      
 </pre>
+</div>
+
 <div style="float:left; width:700px; margin-top:20px;">
 	<p>
 Start up screen for a webGL game I have been creating using voxelJS, processing, and the hypeframework.  The screen uses postprocessing rendering effects like film grain, bloom pass, etc.</p>
