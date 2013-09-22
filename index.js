@@ -267,10 +267,6 @@ $(function(){
   fS.renderToScreen = true
   postprocessor.addPass( bS )
   postprocessor.addPass('ShaderPass', postprocessor.EffectComposer.ShaderExtras[ "screen" ])
-  //postprocessor.addPass('ShaderPass', postprocessor.EffectComposer.ShaderExtras[ "film" ])
-  //postprocessor.addPass( fS )
-  //shaderPass.renderToScreen = true
-  //ef.renderToScreen = true;
 
   onWindowMakeWhite = function(){
     window.game.scene.fog.color = {r:255,g:255,b:255}
