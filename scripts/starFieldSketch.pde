@@ -4,6 +4,7 @@ int numstars=400;
 final int SPREAD=64;
 int CX,CY;
 final float SPEED=1.9;
+color bG = color(0, 0, 0);
 
 Star[] s = new Star[numstars];
 
@@ -20,8 +21,16 @@ void setup(){
   }
 }
 
+window.setStarfieldBG = function(bgColor){
+  bG = bgColor;
+}; 
+
+window.getStarfieldBG = function(){
+  return bG;
+}; 
+
 void draw(){
-  background(0,0,0);
+  background(bG);
   for(int i=0;i<numstars;i++){
     s[i].DrawStar();
   }

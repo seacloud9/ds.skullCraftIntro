@@ -4,12 +4,12 @@ $(function(){
 
       var $projDiv = $('#pContain');
       var canvasRef = $('<canvas id="skullz"/>');
-      p = Processing.loadSketchFromSources('skullz', ['scripts/skullz.pde']);
+      p1 = new Processing.loadSketchFromSources('skullz', ['scripts/skullz.pde']);
       $projDiv.append(canvasRef); 
 
       var $projDiv2 = $('#pContain2');
       var canvasRef2 = $('<canvas id="starField"/>');
-      p = Processing.loadSketchFromSources('starField', ['scripts/starFieldSketch.pde']);
+      p2 = new Processing.loadSketchFromSources('starField', ['scripts/starFieldSketch.pde']);
       $projDiv2.append(canvasRef2); 
     }
 
@@ -271,6 +271,16 @@ $(function(){
   //postprocessor.addPass( fS )
   //shaderPass.renderToScreen = true
   //ef.renderToScreen = true;
+
+  onWindowMakeWhite = function(){
+    window.game.scene.fog.color = {r:255,g:255,b:255}
+    window.game.scene.fog.far = 9999999
+    window.setStarfieldBG(-1)
+  }
+
+  onWindowMakeFilm = function(){
+   postprocessor.addPass('ShaderPass', postprocessor.EffectComposer.ShaderExtras[ "film" ])
+  }
 
   onWindowResize = function( event ) {
         customUniforms.resolution.value.x = window.innerWidth;
