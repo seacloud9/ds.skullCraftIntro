@@ -1,6 +1,6 @@
-<h1>
-<a name="dsskullcraftintro" class="anchor" href="#dsskullcraftintro"><span class="octicon octicon-link"></span></a>ds.skullCraftIntro</h1>
-<div style="width:100%; float:left">
+ds.skullCraftIntro
+(DemoScene).skullCraftIntro
+=============
 <pre>
  ______  __  __  __  __  __      __      ______  ______  ______  ______ ______  
 /\  ___\/\ \/ / /\ \/\ \/\ \    /\ \    /\  ___\/\  == \/\  __ \/\  ___/\__  _\ 
