@@ -13,7 +13,7 @@
 
 <div style="float:left; width:700px; margin-top:20px;">
 	<p>
-Start up screen for a webGL game I have been creating using voxelJS, processing, and the hypeframework.  The screen uses postprocessing rendering effects like film grain, bloom pass, etc.</p>
+Splash screen for a webGL game I have been creating using voxelJS, processing, and the hypeframework.  The screen uses postprocessing rendering effects like film grain and bloom pass.  This example also wraps 2 processing sketches on threeJS models.  The result creates textures that are animated via processing. I also used Blender3d to create the 3d text the model was then exported to threeJS.</p>
 </div>
 <div style="float:left; width:100%; margin-top:20px;">
 <img src="screenshot1.jpg" style="float:left; width:100%"/>
