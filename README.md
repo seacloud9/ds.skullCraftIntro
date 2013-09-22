@@ -8,7 +8,7 @@ ds.skullCraftIntro
   \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_____/   \/_____/   \/_/ /_/   \/_/\/_/   \/_/       \/_/ 
                                                                                                           
 </pre>
-<div style="float:left; width:100%; margin-top:20px;">
+<div style="float:left; width:700px; margin-top:20px;">
 Start up screen for a webGL game I have been creating using voxelJS, processing, and the hypeframework.  The screen uses postprocessing rendering effects like film grain, bloom pass, etc.
 </div>
 <div style="float:left; width:100%; margin-top:20px;">
