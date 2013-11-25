@@ -179,6 +179,7 @@ $(function(){
 
     game.on('tick', function(delta) { 
       tic.tick(delta)
+      //console.log(delta);
       var skullzMod;
       if(!hasGenerated){
         hasGenerated = true;
@@ -37597,6 +37598,7 @@ Chunker.prototype.voxelIndexFromCoordinates = function(x, y, z) {
   var bits = this.chunkBits
   var mask = (1 << bits) - 1
   var vidx = (x & mask) + ((y & mask) << bits) + ((z & mask) << bits * 2)
+  console.log(vidx);
   return vidx
 }
 
@@ -81556,6 +81558,7 @@ module.exports = function(seed, floor, ceiling, divisor) {
     pointsInside(startX, startZ, width, function(x, z) {
       var n = noise.simplex2(x / divisor , z / divisor)
       var y = ~~scale(n, -1, 1, floor, ceiling)
+     // console.log(y)
       if (y === floor || startY < y && y < startY + width) {
         var xidx = Math.abs((width + x % width) % width)
         var yidx = Math.abs((width + y % width) % width)
